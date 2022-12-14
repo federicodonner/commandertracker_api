@@ -12,6 +12,9 @@ app.use(cors());
 var deckRoutes = require("./routes/decks");
 app.use("/decks", deckRoutes);
 
+var countRoutes = require("./routes/count");
+app.use("/count", countRoutes);
+
 app.listen(PORT, (error) => {
   if (!error)
     console.log(
