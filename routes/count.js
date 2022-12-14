@@ -46,8 +46,10 @@ router.put(
             dataToUpdate.forEach((fileDeck) => {
               if (fileDeck.id === deck) {
                 foundDeck = true;
-                if (operation === "minus" && fileDeck.played > 0) {
-                  fileDeck.played = fileDeck.played - 1;
+                if (operation === "minus") {
+                  if (fileDeck.played > 0) {
+                    fileDeck.played = fileDeck.played - 1;
+                  }
                 } else {
                   fileDeck.played = fileDeck.played + 1;
                   fileDeck.lastPlayed = today;
