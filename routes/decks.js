@@ -33,63 +33,82 @@ async function accessAPI(url) {
 }
 
 // Return the data for the user
-router.get("/:user", check("page").escape(), async (req, res) => {
+router.get("/:user", check("user").escape(), async (req, res) => {
   // Validates that the parameters are correct
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     // If one of them isn't, returns an error
-    return res.status(400).json({ message: messages.PARAMETERS_ERROR });
+    return res.status(400).json({
+      message: "Ocurrió un error, por favor intenta nuevamente más tarde.",
+    });
   }
   // Loads the data into variables to use
   const user = req.params.user;
   const url = `https://api2.moxfield.com/v2/users/${user}/decks?pageSize=100`;
 
   // moxfieldData has the details of the decks ready for return, missing number of times played
-  const moxfieldData = await processDeckJSON(await accessAPI(url));
+  try {
+    const moxfieldData = await processDeckJSON(await accessAPI(url));
 
-  // Checks if the file exists
-  // If it doesn't creates it and writes in the array
-  // If it does, returns the content
-  // async function verifyFile(filename, dataToWrite) {
-  fs.open(`./files/${user}.json`, "r", function (fileDoesntExist, file) {
-    // If the file doesn't exist, create it
-    if (fileDoesntExist) {
-      fs.writeFile(
-        `./files/${user}.json`,
-        JSON.stringify(moxfieldData),
-        (err) => {
-          if (err) console.error(err);
-          return res.status(200).json(moxfieldData);
-        }
-      );
-    } else {
-      // If the file already exists
-      // return the data to be updated later
-      fs.readFile(`./files/${user}.json`, "utf8", function (err, fileData) {
-        let returnArray = [];
-        // Goes over the response array, adding the decks that were in the database
-        // and the ones responded from Moxfield, for each, update the played count
-        moxfieldData.forEach((moxfieldDeck) => {
-          returnArray.push(moxfieldDeck);
-        });
-        JSON.parse(fileData).forEach((fileDeck) => {
-          let foundIt = false;
-          returnArray.forEach((returnDeck) => {
-            if (fileDeck.id === returnDeck.id) {
-              returnDeck.played = fileDeck.played;
-              returnDeck.lastPlayed = fileDeck.lastPlayed;
-              foundIt = true;
+    // Checks if the file exists
+    // If it doesn't creates it and writes in the array
+    // If it does, returns the content
+    fs.open(`./files/${user}.json`, "r", function (fileDoesntExist, file) {
+      // If the file doesn't exist, create it
+      if (fileDoesntExist) {
+        fs.writeFile(
+          `./files/${user}.json`,
+          JSON.stringify(moxfieldData),
+          (err) => {
+            if (err) console.error(err);
+            return res.status(200).json(moxfieldData);
+          }
+        );
+      } else {
+        let latestDate = 0;
+        // If the file already exists
+        // return the data to be updated later
+        fs.readFile(`./files/${user}.json`, "utf8", function (err, fileData) {
+          let returnArray = [];
+          // Goes over the response array, adding the decks that were in the database
+          // and the ones responded from Moxfield, for each, update the played count
+          moxfieldData.forEach((moxfieldDeck) => {
+            returnArray.push(moxfieldDeck);
+          });
+          JSON.parse(fileData).forEach((fileDeck) => {
+            let foundIt = false;
+            returnArray.forEach((returnDeck) => {
+              if (fileDeck.id === returnDeck.id) {
+                returnDeck.played = fileDeck.played;
+                returnDeck.lastPlayed = fileDeck.lastPlayed;
+                foundIt = true;
+              }
+              if (fileDeck.lastPlayed > latestDate) {
+                latestDate = fileDeck.lastPlayed;
+              }
+            });
+            if (!foundIt) {
+              returnArray.push(fileDeck);
             }
           });
-          if (!foundIt) {
-            returnArray.push(fileDeck);
-          }
-        });
 
-        return res.status(200).json(returnArray);
-      });
-    }
-  });
+          fs.writeFile(
+            `./files/${user}.json`,
+            JSON.stringify(returnArray),
+            (err) => {
+              if (err) console.error(err);
+            }
+          );
+          return res.status(200).json({ latestDate, decks: returnArray });
+        });
+      }
+    });
+  } catch {
+    return res.status(400).json({
+      message:
+        "Hubo un problema al cargar los mazos, verifica que el nombre de usuario sea el correcto.",
+    });
+  }
 });
 
 module.exports = router;
