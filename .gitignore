@@ -1,5 +1,10 @@
+#deck files
+files/*.json
+
 #.env
 .env
+
+.DS_Store
 
 # Logs
 logs

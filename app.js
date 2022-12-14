@@ -9,6 +9,8 @@ const app = express();
 app.use(cors());
 
 // Routes
+var deckRoutes = require("./routes/decks");
+app.use("/decks", deckRoutes);
 
 app.listen(PORT, (error) => {
   if (!error)
