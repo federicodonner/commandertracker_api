@@ -1,5 +1,5 @@
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 
 const PORT = process.env.PORT || 3001;
 
@@ -9,10 +9,10 @@ const app = express();
 app.use(cors());
 
 // Routes
-var deckRoutes = require("./routes/decks");
+import { deckRoutes } from "./routes/decks.js";
 app.use("/decks", deckRoutes);
 
-var countRoutes = require("./routes/count");
+import { countRoutes } from "./routes/count.js";
 app.use("/count", countRoutes);
 
 app.listen(PORT, (error) => {

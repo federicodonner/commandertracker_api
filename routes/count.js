@@ -1,8 +1,8 @@
-const express = require("express");
+import express from "express";
+import AWS from "aws-sdk";
 const router = express.Router();
-const { check, validationResult, escape } = require("express-validator");
-const fetch = require("node-fetch");
-const fs = require("fs");
+import { check, validationResult } from "express-validator";
+import { checkIfFileExists } from "../utils/utils.js";
 
 // Updates the play count and last played date of a specific deck
 router.put(
@@ -23,57 +23,66 @@ router.put(
     const user = req.params.user;
     const deck = req.params.deck;
     const operation = req.params?.operation;
+    const fileName = `${user}.json`;
+
+    // Configure AWS S3
+    AWS.config.update({ region: process.env.AWS_REGION });
+    const s3 = new AWS.S3({ apiVersion: process.env.AWS_API_VERSION });
 
     try {
       // Checks if the file exists
       // If it doesn't returns an error
       // If it does, returns the content
-      fs.open(`./files/${user}.json`, "r", function (fileDoesntExist, file) {
-        // If the file doesn't exist, create it
-        if (fileDoesntExist) {
-          return res
-            .status(404)
-            .json({ message: "El usuario especificado no existe" });
-        } else {
-          let foundDeck = false;
-          let deckForUIUpdate = {};
-          let dataToUpdate = [];
-          const today = Date.now();
-          // If the file already exists
-          // return the data to be updated later
-          fs.readFile(`./files/${user}.json`, "utf8", function (err, fileData) {
-            dataToUpdate = JSON.parse(fileData);
-            dataToUpdate.forEach((fileDeck) => {
-              if (fileDeck.id === deck) {
-                foundDeck = true;
-                if (operation === "minus") {
-                  if (fileDeck.played > 0) {
-                    fileDeck.played = fileDeck.played - 1;
-                  }
-                } else {
-                  fileDeck.played = fileDeck.played + 1;
-                  fileDeck.lastPlayed = today;
-                }
-                deckForUIUpdate = fileDeck;
-              }
-            });
-            if (!foundDeck) {
-              return res
-                .status(404)
-                .json({ message: "Mazo no encontrado, verifique el código" });
+      const fileData = await checkIfFileExists(s3, fileName);
+      // Checks if the file exists in the S3 bucket
+      if (!fileData) {
+        return res
+          .status(404)
+          .json({ message: "El usuario especificado no existe" });
+      }
+      let foundDeck = false;
+      let deckForUIUpdate = {};
+      const today = Date.now();
+      // If the file already exists
+      // return the data to be updated later
+      fileData.forEach((fileDeck) => {
+        if (fileDeck.id === deck) {
+          foundDeck = true;
+          if (operation === "minus") {
+            if (fileDeck.played > 0) {
+              fileDeck.played = fileDeck.played - 1;
             }
-            fs.writeFile(
-              `./files/${user}.json`,
-              JSON.stringify(dataToUpdate),
-              (err) => {
-                if (err) console.error(err);
-                return res.status(200).json(deckForUIUpdate);
-              }
-            );
-          });
+          } else {
+            fileDeck.played = fileDeck.played + 1;
+            fileDeck.lastPlayed = today;
+          }
+          deckForUIUpdate = fileDeck;
         }
       });
-    } catch {
+      if (!foundDeck) {
+        return res
+          .status(404)
+          .json({ message: "Mazo no encontrado, verifique el código" });
+      }
+      // Update the file in S3
+      const uploadParams = {
+        Bucket: "commandertracker",
+        Body: JSON.stringify(fileData),
+        Key: fileName,
+      };
+      s3.upload(uploadParams, function (err, data) {
+        if (err) {
+          console.log("Error", err);
+          return res
+            .status(500)
+            .json({ message: "Hubo un error al actualizar tus datos" });
+        }
+        if (data) {
+          return res.status(200).json(deckForUIUpdate);
+        }
+      });
+    } catch (err) {
+      console.log(err);
       return res.status(400).json({
         message:
           "Hubo un problema al cargar los mazos, verifica que el nombre de usuario sea el correcto.",
@@ -82,4 +91,4 @@ router.put(
   }
 );
 
-module.exports = router;
+export { router as countRoutes };
