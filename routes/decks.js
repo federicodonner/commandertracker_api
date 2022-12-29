@@ -67,7 +67,7 @@ router.get("/:user", check("user").escape(), async (req, res) => {
             .json({ message: "Hubo un error al actualizar tus datos" });
         }
         if (data) {
-          return res.status(200).json({ latestDate, decks: moxfieldData });
+          return res.status(200).json({ latestDate, decks: returnArray });
         }
       });
     } else {
@@ -86,7 +86,7 @@ router.get("/:user", check("user").escape(), async (req, res) => {
             .json({ message: "Hubo un error al actualizar tus datos" });
         }
         if (data) {
-          return res.status(200).json({ latestDate, decks: moxfieldData });
+          return res.status(200).json({ latestDate, decks: returnArray });
         }
       });
     }
