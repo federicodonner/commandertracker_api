@@ -46,7 +46,7 @@ router.get("/:user", check("user").escape(), async (req, res) => {
           }
         });
         if (!foundIt) {
-          returnArray.push(fileDeck);
+          // returnArray.push(fileDeck);
         }
       });
 
