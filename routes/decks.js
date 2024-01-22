@@ -90,7 +90,8 @@ router.get("/:user", check("user").escape(), async (req, res) => {
         }
       });
     }
-  } catch {
+  } catch (e) {
+    console.log(e);
     return res.status(400).json({
       message:
         "Hubo un problema al cargar los mazos, verifica que el nombre de usuario sea el correcto.",

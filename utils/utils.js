@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+
 // Checks if the file exists in S3
 // if it does, return the contents in JSON
 // if not, return false
@@ -36,7 +37,12 @@ export function processDeckJSON(returnedJSON) {
 
 // Accesses the API to return the decks
 export async function accessAPI(url) {
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent":
+        "'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'",
+    },
+  });
   const data = await response.json();
   return data;
 }
