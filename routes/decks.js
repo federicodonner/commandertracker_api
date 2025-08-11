@@ -22,8 +22,13 @@ router.get("/:user", check("user").escape(), async (req, res) => {
 
   // moxfieldData has the details of the decks ready for return, missing number of times played
   try {
-    const moxfieldData = await processDeckJSON(await accessAPI(url));
+    const moxfieldResponse = await accessAPI(url);
+    console.log(moxfieldResponse);
+    const moxfieldData = await processDeckJSON(moxfieldResponse);
     const fileData = await checkIfFileExists(s3, fileName);
+
+    console.log(user, url, moxfieldData, fileData);
+
     // Checks if the file exists in the S3 bucket
     if (fileData) {
       // If the file exists in S3, execute this code
