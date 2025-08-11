@@ -10,7 +10,7 @@ import {
 
 // Return the data for the user
 router.get("/:user", check("user").escape(), async (req, res) => {
-  console.log("estoy en /:user");
+  console.log("estoy en /:user 2");
   // Configure AWS S3
   AWS.config.update({ region: process.env.AWS_REGION });
   const s3 = new AWS.S3({ apiVersion: process.env.AWS_API_VERSION });
