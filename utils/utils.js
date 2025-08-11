@@ -39,8 +39,9 @@ export function processDeckJSON(returnedJSON) {
 export async function accessAPI(url) {
   const response = await fetch(url, {
     headers: {
-      "User-Agent":
-        "'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'",
+      // "User-Agent":
+      //   "'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'",
+      "User-Agent": "PostmanRuntime/7.45.0",
     },
   });
   console.log(response);
