@@ -10,6 +10,7 @@ import {
 
 // Return the data for the user
 router.get("/:user", check("user").escape(), async (req, res) => {
+  console.log("estoy en /:user");
   // Configure AWS S3
   AWS.config.update({ region: process.env.AWS_REGION });
   const s3 = new AWS.S3({ apiVersion: process.env.AWS_API_VERSION });
@@ -22,6 +23,7 @@ router.get("/:user", check("user").escape(), async (req, res) => {
 
   // moxfieldData has the details of the decks ready for return, missing number of times played
   try {
+    console.log("estoy en el try");
     const moxfieldResponse = await accessAPI(url);
     console.log(moxfieldResponse);
     const moxfieldData = await processDeckJSON(moxfieldResponse);
