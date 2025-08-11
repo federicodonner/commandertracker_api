@@ -26,7 +26,9 @@ router.get("/:user", check("user").escape(), async (req, res) => {
     console.log("estoy en el try");
     const moxfieldResponse = await accessAPI(url);
     console.log(moxfieldResponse);
-    return;
+    return res.status(400).json({
+      message: "Holaaaa",
+    });
     const moxfieldData = await processDeckJSON(moxfieldResponse);
     const fileData = await checkIfFileExists(s3, fileName);
 
